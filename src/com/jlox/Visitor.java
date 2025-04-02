@@ -1,13 +1,21 @@
 package com.jlox;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 class Visitor {
     List<Expr> e;
+    Map<String, Object> symbolTable;
 
     Visitor(List<Expr> e) {
         this.e = e;
+        this.symbolTable = new HashMap<>();
+    }
+
+    Object getFromSymbolTable(String key) {
+        return this.symbolTable.get(key);
     }
 
     Object v(Expr x) {
@@ -97,6 +105,9 @@ class Visitor {
                         return (float) l >= (float) r;
                     }
                 }
+                case TokenType.ASSIGN -> {
+                    this.symbolTable.put((String) l, r);
+                }
             }
         } else if (x instanceof Expr.Unary) {
             Object r = v(((Expr.Unary) x).right);
@@ -117,15 +128,17 @@ class Visitor {
             }
         } else if (x instanceof Expr.Literal) {
             if (((Expr.Literal) x).value == null) return null;
-
             return ((Expr.Literal) x).value;
+        } else if (x instanceof Expr.Identifier) {
+            return ((Expr.Identifier) x).name;
         }
-        return 0;
+        return null;
     }
 
     void Visit() {
         for (Expr e : this.e) {
-            System.out.println(v(e));
+            Object result = v(e);
+            if (e != null && result != null) System.out.println(result);
         }
     }
 }

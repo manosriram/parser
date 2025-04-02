@@ -12,14 +12,20 @@ class Lox {
 
         Parser p = new Parser(tokens);
         List<Expr> exprs = p.Parse();
-        System.out.println(exprs.size());
+//        System.out.println(exprs.size());
 
-        for (Expr e : exprs) {
-            System.out.println(e);
-        }
+//        for (Expr e : exprs) {
+//            System.out.println(e);
+//        }
 
-//        Visitor v = new Visitor(exprs);
-//        v.Visit();
+        Visitor v = new Visitor(exprs);
+        v.Visit();
+
+        System.out.println("a = " + v.getFromSymbolTable("a"));
+        System.out.println("b = " + v.getFromSymbolTable("b"));
+        System.out.println("c = " + v.getFromSymbolTable("c"));
+        System.out.println("d = " + v.getFromSymbolTable("d"));
+        System.out.println("e = " + v.getFromSymbolTable("e"));
     }
 
     private static void runFile(String path) throws IOException {

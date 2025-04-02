@@ -1,3 +1,5 @@
-1 + 2
-34
--10
+a = 1;
+b = "mano";
+c = 1.23;
+d = true;
+e = true and false;

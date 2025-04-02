@@ -81,6 +81,12 @@ class Parser {
                  TokenType.GREATER_THAN_OR_EQUAL, TokenType.BITWISE_OR, TokenType.BITWISE_AND -> {
                 Token op = this.getCurrentToken();
                 this.eat(c);
+                Expr right = Term();
+                return new Expr.Binary(left, op.type, right);
+            }
+            case TokenType.ASSIGN -> {
+                Token op = this.getCurrentToken();
+                this.eat(c);
                 Expr right = Expr();
                 return new Expr.Binary(left, op.type, right);
             }
@@ -140,6 +146,13 @@ class Parser {
             case TokenType.NIL -> {
                 this.eat(c);
                 return new Expr.Literal(null, c.type.toString());
+            }
+            case TokenType.IDENTIFIER -> {
+                this.eat(c);
+                return new Expr.Identifier((String) c.literal);
+            }
+            case TokenType.SEMICOLON -> {
+                this.eat(c);
             }
         }
         return null;

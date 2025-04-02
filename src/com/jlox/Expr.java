@@ -23,6 +23,14 @@ abstract class Expr {
         }
     }
 
+    static class Identifier extends Expr {
+        final String name;
+
+        Identifier(String name) {
+            this.name = name;
+        }
+    }
+
     static class Unary extends Expr {
         final TokenType operator;
         final Expr right;
