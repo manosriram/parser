@@ -15,13 +15,15 @@ abstract class Expr {
 
     static class Literal extends Expr {
         final Object value;
+        final String type;
 
-        Literal(Object value) {
+        Literal(Object value, String type) {
             this.value = value;
+            this.type = type;
         }
     }
 
-    class Unary {
+    static class Unary extends Expr {
         final TokenType operator;
         final Expr right;
 

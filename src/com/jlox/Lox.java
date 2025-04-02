@@ -12,8 +12,14 @@ class Lox {
 
         Parser p = new Parser(tokens);
         List<Expr> exprs = p.Parse();
-        Visitor v = new Visitor(exprs);
-        v.Visit();
+        System.out.println(exprs.size());
+
+        for (Expr e : exprs) {
+            System.out.println(e);
+        }
+
+//        Visitor v = new Visitor(exprs);
+//        v.Visit();
     }
 
     private static void runFile(String path) throws IOException {

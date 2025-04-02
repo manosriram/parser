@@ -76,7 +76,9 @@ class Parser {
         Expr left = Term();
         Token c = this.getCurrentToken();
         switch (c.type) {
-            case TokenType.PLUS -> {
+            case TokenType.PLUS, TokenType.MINUS, TokenType.NOT_EQUALS, TokenType.EQUALS, TokenType.OR,
+                 TokenType.AND, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL, TokenType.GREATER_THAN,
+                 TokenType.GREATER_THAN_OR_EQUAL, TokenType.BITWISE_OR, TokenType.BITWISE_AND -> {
                 Token op = this.getCurrentToken();
                 this.eat(c);
                 Expr right = Expr();
@@ -97,7 +99,6 @@ class Parser {
                 return new Expr.Binary(left, op.type, right);
             }
         }
-
         return left;
     }
 
@@ -106,13 +107,39 @@ class Parser {
         switch (c.type) {
             case TokenType.NUMBER -> {
                 this.eat(c);
-                return new Expr.Literal(c.literal);
+                return new Expr.Literal(Integer.parseInt((String) c.literal), c.type.toString());
+            }
+            case TokenType.FLOAT -> {
+                this.eat(c);
+                return new Expr.Literal(Float.parseFloat((String) c.literal), c.type.toString());
+            }
+            case TokenType.STRING -> {
+                this.eat(c);
+                return new Expr.Literal(c.literal, c.type.toString());
             }
             case TokenType.LEFT_BRACE -> {
                 this.eat(c);
                 Expr e = Expr();
                 this.eat(this.getCurrentToken());
                 return e;
+            }
+            case TokenType.NOT, TokenType.MINUS -> {
+                this.eat(c);
+                Expr right = Expr();
+                this.eat(this.getCurrentToken());
+                return new Expr.Unary(c.type, right);
+            }
+            case TokenType.TRUE -> {
+                this.eat(c);
+                return new Expr.Literal(true, "BOOLEAN");
+            }
+            case TokenType.FALSE -> {
+                this.eat(c);
+                return new Expr.Literal(false, "BOOLEAN");
+            }
+            case TokenType.NIL -> {
+                this.eat(c);
+                return new Expr.Literal(null, c.type.toString());
             }
         }
         return null;

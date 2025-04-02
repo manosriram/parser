@@ -34,9 +34,15 @@ enum TokenType {
 
     STRING,
     NUMBER,
+    FLOAT,
 
     OR,
     AND,
     TRUE,
-    FALSE
+    FALSE,
+
+    BITWISE_OR,
+    BITWISE_AND,
+
+    NIL
 }

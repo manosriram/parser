@@ -14,6 +14,7 @@ class Scanner {
     Map<String, TokenType> keywords;
 
     void buildKeywords() {
+        this.keywords.put("nil", TokenType.NIL);
         this.keywords.put("and", TokenType.AND);
         this.keywords.put("or", TokenType.OR);
         this.keywords.put("if", TokenType.IF);
@@ -169,15 +170,17 @@ class Scanner {
                     while (isDigit(peek())) {
                         this.advance();
                     }
+                    boolean isFloat = false;
                     if (peek() == '.' && isDigit(peekNext())) {
                         this.advance();
+                        isFloat = true;
                     }
 
                     while (isDigit(peek())) {
                         this.advance();
                     }
 
-                    this.addToken(TokenType.NUMBER, this.source.substring(this.start, this.current));
+                    this.addToken(!isFloat ? TokenType.NUMBER : TokenType.FLOAT, this.source.substring(this.start, this.current));
                 } else if (isAlpha(c)) {
                     while (isAlpha(peek())) {
                         this.advance();
