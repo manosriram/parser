@@ -10,10 +10,11 @@ class Lox {
         Scanner s = new Scanner(source);
         List<Token> tokens = s.scanTokens();
 
-        Parser p = new Parser(tokens);
+        Interpreter p = new Interpreter(tokens);
         List<Expr> exprs = p.Parse();
-//        System.out.println(exprs.size());
 
+//        Expr.Binary b = (Expr.Binary) exprs.get(2);
+//        System.out.println(b.operator);
 //        for (Expr e : exprs) {
 //            System.out.println(e);
 //        }
@@ -21,11 +22,7 @@ class Lox {
         Visitor v = new Visitor(exprs);
         v.Visit();
 
-        System.out.println("a = " + v.getFromSymbolTable("a"));
-        System.out.println("b = " + v.getFromSymbolTable("b"));
-        System.out.println("c = " + v.getFromSymbolTable("c"));
-        System.out.println("d = " + v.getFromSymbolTable("d"));
-        System.out.println("e = " + v.getFromSymbolTable("e"));
+        v.printSymbolTable();
     }
 
     private static void runFile(String path) throws IOException {

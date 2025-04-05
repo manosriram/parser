@@ -45,5 +45,4 @@ enum TokenType {
     BITWISE_AND,
 
     NIL,
-    NEWLINE
 }

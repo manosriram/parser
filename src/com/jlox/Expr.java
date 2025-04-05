@@ -13,6 +13,18 @@ abstract class Expr {
         }
     }
 
+    static class Assign extends Expr {
+        final Expr right;
+        final Identifier id;
+        final TokenType operator;
+
+        Assign(Identifier left, TokenType operator, Expr right) {
+            this.right = right;
+            this.id = left;
+            this.operator = operator;
+        }
+    }
+
     static class Literal extends Expr {
         final Object value;
         final String type;

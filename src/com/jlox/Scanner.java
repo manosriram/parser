@@ -180,7 +180,8 @@ class Scanner {
                         this.advance();
                     }
 
-                    this.addToken(!isFloat ? TokenType.NUMBER : TokenType.FLOAT, this.source.substring(this.start, this.current));
+//                    this.addToken(!isFloat ? TokenType.NUMBER : TokenType.FLOAT, this.source.substring(this.start, this.current));
+                    this.addToken(TokenType.NUMBER, this.source.substring(this.start, this.current));
                 } else if (isAlpha(c)) {
                     while (isAlpha(peek())) {
                         this.advance();
