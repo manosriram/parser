@@ -208,9 +208,7 @@ class Visitor {
 
     void Visit() {
         for (Expr e : this.e) {
-            Object result = v(e);
-            if (e != null && result != null) {
-            }
+            v(e);
         }
     }
 }
