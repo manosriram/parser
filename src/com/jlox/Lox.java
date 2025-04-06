@@ -13,12 +13,9 @@ class Lox {
         Interpreter p = new Interpreter(tokens);
         List<Expr> exprs = p.Parse();
 
-//        Expr.Binary b = (Expr.Binary) exprs.get(2);
-//        System.out.println(b.operator);
 //        for (Expr e : exprs) {
 //            System.out.println(e);
 //        }
-
         Visitor v = new Visitor(exprs);
         v.Visit();
 

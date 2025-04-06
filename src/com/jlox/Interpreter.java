@@ -94,7 +94,7 @@ class Interpreter {
             case TokenType.ASSIGN -> {
                 this.eat(c.type, "");
                 Expr right = Expr();
-//                this.eat(TokenType.SEMICOLON);
+                this.eat(TokenType.SEMICOLON, "");
                 return new Expr.Assign((Expr.Identifier) left, c.type, right);
             }
         }
