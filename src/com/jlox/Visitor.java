@@ -207,8 +207,6 @@ class Visitor {
     }
 
     void Visit() {
-        for (Expr e : this.e) {
-            v(e);
-        }
+        for (Expr e : this.e) v(e);
     }
 }
