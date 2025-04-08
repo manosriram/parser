@@ -1,23 +1,5 @@
 package com.jlox;
 
-/*
-    Grammar
-        expr ::= expr | expr ("+" | "-") term
-        term ::= term | term ("*" | "/") factor
-        factor ::= INTEGER | STRING
-
-    Statements
-        - FOR
-        - WHILE
-        - IF
-        - LEFT_BRACE
-        - PRINT
-        - RETURN
-
-    Expressions
-        -
- */
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,14 +13,15 @@ class Interpreter {
         this.current = 0;
     }
 
-    boolean check(Token token) {
+    boolean check(TokenType token) {
         if (isAtEnd()) return false;
-        return this.tokens.get(this.current) == token;
+        return this.tokens.get(this.current).type == token;
     }
 
-    boolean match(Token... tokens) {
-        for (Token token : tokens) {
+    boolean match(TokenType... tokens) {
+        for (TokenType token : tokens) {
             if (check(token)) {
+                this.eat(token, "");
                 return true;
             }
         }
@@ -74,89 +57,131 @@ class Interpreter {
     List<Expr> Parse() {
         List<Expr> x = new ArrayList<>();
         while (!isAtEnd()) {
-            x.add(Expr());
+            x.add(declaration());
         }
         return x;
     }
 
-    Expr Expr() {
-        Expr left = Term();
-        Token c = this.getCurrentToken();
-        switch (c.type) {
-            case TokenType.PLUS, TokenType.MINUS, TokenType.NOT_EQUALS, TokenType.EQUALS, TokenType.OR,
-                 TokenType.AND, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL, TokenType.GREATER_THAN,
-                 TokenType.GREATER_THAN_OR_EQUAL, TokenType.BITWISE_OR, TokenType.BITWISE_AND -> {
-                this.eat(c.type, "");
-                Expr right = Expr();
-                this.eat(TokenType.SEMICOLON, "");
-                return new Expr.Binary(left, c.type, right);
-            }
-            case TokenType.ASSIGN -> {
-                this.eat(c.type, "");
-                Expr right = Expr();
-                this.eat(TokenType.SEMICOLON, "");
-                return new Expr.Assign((Expr.Identifier) left, c.type, right);
+    Expr declaration() {
+        Expr expr = expression();
+        this.eat(TokenType.SEMICOLON, "");
+        return expr;
+    }
+
+    Expr expression() {
+        return assignment();
+    }
+
+    Token previous() {
+        return this.tokens.get(this.current - 1);
+    }
+
+    Expr assignment() {
+        Expr left = or();
+        if (match(TokenType.ASSIGN)) {
+            Token eq = previous();
+            Expr right = assignment();
+            if (left instanceof Expr.Variable) {
+                Token name = ((Expr.Variable) left).var;
+                return new Expr.Assign(name, right);
+            } else {
+                throw new RuntimeException("Invalid assignment target " + eq);
             }
         }
         return left;
     }
 
-    Expr Term() {
-        Expr left = Factor();
-        Token c = this.getCurrentToken();
-        switch (c.type) {
-            case TokenType.MULTIPLY, TokenType.DIVIDE -> {
-                this.eat(c.type, "");
-                Expr right = Factor();
-                return new Expr.Binary(left, c.type, right);
-            }
-            case TokenType.LEFT_BRACE -> {
-                this.eat(TokenType.LEFT_BRACE, "");
-                Expr e = Expr();
-                this.eat(TokenType.RIGHT_BRACE, "");
-                this.eat(TokenType.SEMICOLON, "");
-                return e;
-            }
+    Expr or() {
+        Expr expr = and();
+        while (match(TokenType.OR)) {
+            Token op = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, op, right);
         }
-        return left;
+        return expr;
     }
 
-    Expr Factor() {
-        Token c = this.getCurrentToken();
-        switch (c.type) {
-            case TokenType.NUMBER, TokenType.FLOAT -> {
-                this.eat(c.type, "");
-                return new Expr.Literal(Float.parseFloat((String) c.literal), c.type.toString());
-            }
-            case TokenType.STRING -> {
-                this.eat(c.type, "");
-                return new Expr.Literal(c.lexeme, c.type.toString());
-            }
-            case TokenType.NOT, TokenType.MINUS, TokenType.PLUS -> {
-                this.eat(c.type, "");
-                Expr right = Expr();
-                return new Expr.Unary(c.type, right);
-            }
-            case TokenType.TRUE -> {
-                this.eat(c.type, "");
-                return new Expr.Literal(true, "BOOLEAN");
-            }
-            case TokenType.FALSE -> {
-                this.eat(c.type, "");
-                return new Expr.Literal(false, "BOOLEAN");
-            }
-            case TokenType.NIL -> {
-                this.eat(c.type, "");
-                return new Expr.Literal(null, c.type.toString());
-            }
-            case TokenType.IDENTIFIER -> {
-                this.eat(c.type, "");
-                return new Expr.Identifier((String) c.literal);
-            }
-            case TokenType.RIGHT_BRACE, TokenType.SEMICOLON -> {
-                this.eat(c.type, "");
-            }
+    Expr and() {
+        Expr expr = equality();
+        while (match(TokenType.AND)) {
+            Token op = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, op, right);
         }
-        return null;
+        return expr;
+    }
+
+    Expr equality() {
+        Expr expr = comparision();
+        while (match(TokenType.EQUALS, TokenType.NOT_EQUALS)) {
+            Token op = previous();
+            Expr right = comparision();
+            expr = new Expr.Binary(expr, op, right);
+        }
+        return expr;
+    }
+
+    Expr comparision() {
+        Expr expr = term();
+        while (match(TokenType.GREATER_THAN, TokenType.GREATER_THAN_OR_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL)) {
+            Token op = previous();
+            Expr right = term();
+            expr = new Expr.Binary(expr, op, right);
+        }
+        return expr;
+    }
+
+    Expr term() {
+        Expr expr = factor();
+        while (match(TokenType.PLUS, TokenType.MINUS)) {
+            Token op = previous();
+            Expr right = factor();
+            expr = new Expr.Binary(expr, op, right);
+        }
+        return expr;
+    }
+
+    Expr factor() {
+        Expr expr = unary();
+        while (match(TokenType.MULTIPLY, TokenType.DIVIDE)) {
+            Token op = previous();
+            Expr right = unary();
+            expr = new Expr.Binary(expr, op, right);
+        }
+        return expr;
+    }
+
+    Expr unary() {
+        if (match(TokenType.NOT, TokenType.MINUS)) {
+            Token op = previous();
+            Expr right = unary();
+            return new Expr.Unary(op, right);
+        }
+
+        return primary();
+    }
+
+    Expr primary() {
+        if (match(TokenType.TRUE)) return new Expr.Literal(true);
+        if (match(TokenType.FALSE)) return new Expr.Literal(false);
+        if (match(TokenType.NIL)) return new Expr.Literal(null);
+        if (match(TokenType.NUMBER)) {
+            return new Expr.Literal(Double.parseDouble((String) previous().literal));
+        }
+        if (match(TokenType.STRING)) {
+            return new Expr.Literal(previous().lexeme);
+        }
+
+        if (match(TokenType.IDENTIFIER)) {
+//            System.out.println("prev = " + previous());
+            return new Expr.Variable(previous());
+        }
+        if (match(TokenType.LEFT_PAREN)) {
+            Expr expr = expression();
+            this.eat(TokenType.RIGHT_PAREN, "Closing ) expected");
+            return new Expr.Grouping(expr);
+        }
+
+        throw new RuntimeException("Error parsing source");
     }
 }

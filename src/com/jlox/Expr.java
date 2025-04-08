@@ -1,55 +1,117 @@
 package com.jlox;
 
 abstract class Expr {
+    interface Visitor<R> {
+        R visitBinaryExpr(Binary expr);
+
+        R visitAssignExpr(Assign expr);
+
+        R visitLiteralExpr(Literal expr);
+
+        R visitVariableExpr(Variable expr);
+
+        R visitUnaryExpr(Unary expr);
+
+        R visitLogicalExpr(Logical expr);
+
+        R visitGroupingExpr(Grouping expr);
+    }
+
+    abstract <R> R accept(Visitor<R> visitor);
+
     static class Binary extends Expr {
         final Expr right;
         final Expr left;
-        final TokenType operator;
+        final Token operator;
 
-        Binary(Expr left, TokenType operator, Expr right) {
+        Binary(Expr left, Token operator, Expr right) {
             this.right = right;
             this.left = left;
             this.operator = operator;
         }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBinaryExpr(this);
+        }
     }
 
     static class Assign extends Expr {
-        final Expr right;
-        final Identifier id;
-        final TokenType operator;
+        Token name;
+        Expr value;
 
-        Assign(Identifier left, TokenType operator, Expr right) {
-            this.right = right;
-            this.id = left;
-            this.operator = operator;
+        Assign(Token name, Expr value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssignExpr(this);
         }
     }
 
     static class Literal extends Expr {
         final Object value;
-        final String type;
 
-        Literal(Object value, String type) {
+        Literal(Object value) {
             this.value = value;
-            this.type = type;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLiteralExpr(this);
         }
     }
 
-    static class Identifier extends Expr {
-        final String name;
+    static class Grouping extends Expr {
+        final Expr expression;
 
-        Identifier(String name) {
-            this.name = name;
+        Grouping(Expr expression) {
+            this.expression = expression;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGroupingExpr(this);
+        }
+    }
+
+    static class Variable extends Expr {
+        final Token var;
+
+        Variable(Token var) {
+            this.var = var;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVariableExpr(this);
         }
     }
 
     static class Unary extends Expr {
-        final TokenType operator;
+        final Token operator;
         final Expr right;
 
-        Unary(TokenType operator, Expr right) {
+        Unary(Token operator, Expr right) {
             this.operator = operator;
             this.right = right;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitUnaryExpr(this);
+        }
+    }
+
+    static class Logical extends Expr {
+        final Expr left;
+        final Token op;
+        final Expr right;
+
+        Logical(Expr left, Token op, Expr right) {
+            this.left = left;
+            this.op = op;
+            this.right = right;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogicalExpr(this);
         }
     }
 }

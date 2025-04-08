@@ -1,3 +1,17 @@
-expr ::= term
-term ::= factor
-factor ::= INTEGER | STRING
+program ::= (declaration | EOF)*;
+
+declaration ::= statement;
+
+statement ::= exprStatement ";";
+
+exprStatement ::= expression;
+expression ::= assignment;
+assignment ::= or | IDENTIFIER "=" assignment;
+or ::= and | ("or" and)*;
+and ::= equality | ("and" equality)*;
+equality ::= comparision | (("==" | "!=") comparision)*;
+comparision ::= term | ( (">=" | "<=" | ">" | "<") term)*;
+term ::= factor | (("+" | "-") factor)*;
+factor ::= unary | (("*" | "/") unary)*;
+unary ::= ("-" | "!") unary | primary;
+primary ::= "true" | "false" | "nil" | NUMBER | STRING | IDENTIFIER | "(" expression ")";
