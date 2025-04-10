@@ -54,19 +54,64 @@ class Interpreter {
         return this.tokens.get(this.current);
     }
 
-    List<Expr> Parse() {
-        List<Expr> x = new ArrayList<>();
+    List<Stmt> Parse() {
+        List<Stmt> x = new ArrayList<>();
         while (!isAtEnd()) {
             x.add(declaration());
         }
         return x;
     }
 
-    Expr declaration() {
+    Stmt declaration() {
+        return statement();
+    }
+
+    Stmt statement() {
+        if (match(TokenType.PRINT)) return printStatement();
+        if (match(TokenType.IF)) return ifStatement();
+
+//        if (match(TokenType.LEFT_BRACE)) {
+//            return block();
+//        }
+
+        return expressionStmt();
+    }
+
+    Stmt block() {
+        List<Stmt> stmts = new ArrayList<>();
+        this.eat(TokenType.LEFT_BRACE, "");
+        while (!match(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            stmts.add(statement());
+        }
+        return new Stmt.Block(stmts);
+    }
+
+    Stmt ifStatement() {
+        this.eat(TokenType.LEFT_PAREN, "Missing ( at the start of if-condition");
+        Expr e = expression();
+        this.eat(TokenType.RIGHT_PAREN, "Missing ) at the end of if-condition");
+
+        Stmt ifBlock = block();
+        Stmt elseBlock = null;
+        if (match(TokenType.ELSE)) {
+           elseBlock = block();
+        }
+
+        return new Stmt.IfStmt(e, ifBlock, elseBlock);
+    }
+
+    Stmt printStatement() {
+        Expr e = expression();
+        this.eat(TokenType.SEMICOLON, "");
+        return new Stmt.PrintStmt(e);
+    }
+
+    Stmt expressionStmt() {
         Expr expr = expression();
         this.eat(TokenType.SEMICOLON, "");
-        return expr;
+        return new Stmt.ExpressionStmt(expr);
     }
+
 
     Expr expression() {
         return assignment();
@@ -112,16 +157,16 @@ class Interpreter {
     }
 
     Expr equality() {
-        Expr expr = comparision();
+        Expr expr = comparison();
         while (match(TokenType.EQUALS, TokenType.NOT_EQUALS)) {
             Token op = previous();
-            Expr right = comparision();
+            Expr right = comparison();
             expr = new Expr.Binary(expr, op, right);
         }
         return expr;
     }
 
-    Expr comparision() {
+    Expr comparison() {
         Expr expr = term();
         while (match(TokenType.GREATER_THAN, TokenType.GREATER_THAN_OR_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_OR_EQUAL)) {
             Token op = previous();
@@ -173,7 +218,6 @@ class Interpreter {
         }
 
         if (match(TokenType.IDENTIFIER)) {
-//            System.out.println("prev = " + previous());
             return new Expr.Variable(previous());
         }
         if (match(TokenType.LEFT_PAREN)) {

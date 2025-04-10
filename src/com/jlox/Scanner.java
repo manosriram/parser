@@ -23,6 +23,7 @@ class Scanner {
         this.keywords.put("false", TokenType.FALSE);
         this.keywords.put("pass", TokenType.PASS);
         this.keywords.put("return", TokenType.RETURN);
+        this.keywords.put("print", TokenType.PRINT);
     }
 
     Scanner(String source) {
@@ -107,16 +108,16 @@ class Scanner {
                 this.addToken(TokenType.MINUS);
                 break;
             case '(':
-                this.addToken(TokenType.LEFT_BRACE);
-                break;
-            case ')':
-                this.addToken(TokenType.RIGHT_BRACE);
-                break;
-            case '{':
                 this.addToken(TokenType.LEFT_PAREN);
                 break;
-            case '}':
+            case ')':
                 this.addToken(TokenType.RIGHT_PAREN);
+                break;
+            case '{':
+                this.addToken(TokenType.LEFT_BRACE);
+                break;
+            case '}':
+                this.addToken(TokenType.RIGHT_BRACE);
                 break;
             case ',':
                 this.addToken(TokenType.COMMA);

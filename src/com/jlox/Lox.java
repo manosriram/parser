@@ -1,5 +1,7 @@
 package com.jlox;
 
+import com.jlox.Stmt.ExpressionStmt;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-class Lox implements Expr.Visitor<Object> {
+class Lox implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     Map<Object, Object> symbolTable;
 
     Lox() {
@@ -20,13 +22,13 @@ class Lox implements Expr.Visitor<Object> {
         List<Token> tokens = s.scanTokens();
 
         Interpreter p = new Interpreter(tokens);
-        List<Expr> exprs = p.Parse();
+        List<Stmt> stmts = p.Parse();
 
-        for (Expr e : exprs) {
-            e.accept(this);
+        for (Stmt stmt : stmts) {
+            stmt.accept(this);
         }
 
-        this.printSymbolTable();
+//        this.printSymbolTable();
     }
 
     void printSymbolTable() {
@@ -45,6 +47,10 @@ class Lox implements Expr.Visitor<Object> {
 
     Object eval(Expr expr) {
         return expr.accept(this);
+    }
+
+    void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
     @Override
@@ -205,6 +211,39 @@ class Lox implements Expr.Visitor<Object> {
                     throw new RuntimeException("Cannot evaluate type " + r.getClass());
                 }
             }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.ExpressionStmt stmt) {
+        eval(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.PrintStmt stmt) {
+        Object o = eval(stmt.expression);
+        System.out.println(o);
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(Stmt.IfStmt stmt) {
+        Object condition = eval(stmt.condition);
+        if (isTruth(condition)) {
+            execute(stmt.thenBranch);
+        } else {
+            execute(stmt.elseBranch);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visitBlock(Stmt.Block stmt) {
+        for (Stmt s: stmt.statements) {
+            execute(s);
         }
         return null;
     }

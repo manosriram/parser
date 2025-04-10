@@ -19,6 +19,7 @@ enum TokenType {
     ELSE,
     PASS,
     RETURN,
+    PRINT,
 
     NOT,
     EQUALS,
