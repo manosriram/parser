@@ -94,14 +94,16 @@ class Interpreter {
         Stmt ifBlock = block();
         Stmt elseBlock = null;
         if (match(TokenType.ELSE)) {
-           elseBlock = block();
+            elseBlock = block();
         }
 
         return new Stmt.IfStmt(e, ifBlock, elseBlock);
     }
 
     Stmt printStatement() {
+        this.eat(TokenType.LEFT_PAREN, "");
         Expr e = expression();
+        this.eat(TokenType.RIGHT_PAREN, "");
         this.eat(TokenType.SEMICOLON, "");
         return new Stmt.PrintStmt(e);
     }

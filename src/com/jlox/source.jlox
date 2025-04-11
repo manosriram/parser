@@ -4,4 +4,8 @@ if (1 == 1 and 1 == 1) {
     a = a;
 }
 
-print a;
+if (true) {
+    a = 2 * a;
+}
+
+print(a + 100);
